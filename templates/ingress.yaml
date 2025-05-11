@@ -1,0 +1,43 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: keycloak-ingress
+  annotations:
+    {{- range $key, $value := .Values.ingress.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.ingressClassName }}
+  tls:
+  - hosts:
+    - {{ .Values.ingress.host }}
+    - {{ .Values.ingress.host2 }}
+    secretName: {{ .Values.ingress.tls.secretName }}
+  rules:
+  # Keycloak
+  - host: {{ .Values.ingress.host }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: keycloak
+            port:
+              number: {{ .Values.service.keycloak.port }}
+    # Apache
+  - host: {{ .Values.ingress.host2 }}
+    http:
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: apache2
+              port:
+                number: {{ .Values.service.apache2.port }}
+{{- end }}
+
+
+

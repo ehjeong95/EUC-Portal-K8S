@@ -1,0 +1,11 @@
+# templates/storageclass.yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {{ .Values.persistence.storageClass }} #value 값에서 가져옴 standard
+  #name: standard
+provisioner: rancher.io/local-path   # 클라우드 환경에 따라 적절히 변경 (AWS EBS 예시)
+reclaimPolicy: Delete                # PVC Delete 시 PV도 삭제
+volumeBindingMode: WaitForFirstConsumer
+# 이 StorageClass는 동적 프로비저닝을 사용하여
+# PVC 요청 시 자동으로 PV를 생성합니다.

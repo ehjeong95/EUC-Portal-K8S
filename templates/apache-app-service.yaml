@@ -1,0 +1,14 @@
+#service
+apiVersion: v1
+kind: Service
+metadata:
+  name: apache2
+spec:
+  type: {{ .Values.service.apache2.type }}
+  ports:
+  - port: {{ .Values.service.apache2.port }}
+    targetPort: 80
+    protocol: TCP
+    name: http
+  selector:
+    app: apache2
