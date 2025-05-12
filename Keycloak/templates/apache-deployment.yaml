@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: apache2
+spec:
+  selector:
+    matchLabels:
+      app: apache2  # ① matchLabels로 변경
+  replicas: {{ .Values.replicaCount.apache2 }}
+  revisionHistoryLimit: 2
+  template:
+    metadata:
+      labels:
+        app: apache2  # ② selector와 동일한 라벨 추가
+    spec:
+      containers:
+      - name: apache
+        image: "{{ .Values.image.apache2.repository }}:{{ .Values.image.apache2.tag }}"
+        imagePullPolicy: {{ .Values.image.apache2.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.service.apache2.port }}     
+#        volumeMounts:
+#        - name: apache2-storage
+#          mountPath: /usr/local/apache2/htdocs
+  volumeClaimTemplates:
+  - metadata:
+      name: apache2-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: {{ .Values.persistence.storageClass }}
+      resources:
+        requests:
+          storage: {{ .Values.persistence.size.apache2 }}

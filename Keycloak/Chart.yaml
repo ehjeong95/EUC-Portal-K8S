@@ -1,0 +1,6 @@
+# Helm Chart: keycloak-postgres-helm
+# Chart.yaml
+apiVersion: v2
+name: euc
+version: 0.1.0
+# ↓ PostgreSQL-HA 차트를 서브차트로 가져옵니다

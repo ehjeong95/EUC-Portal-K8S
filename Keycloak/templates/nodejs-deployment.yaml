@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: nodejs
+spec:
+  selector:
+    matchLabels:
+      app: nodejs  # ① matchLabels로 변경
+  replicas: {{ .Values.replicaCount.apache2 }}
+  revisionHistoryLimit: 2
+  template:
+    metadata:
+      labels:
+        app: nodejs  # ② selector와 동일한 라벨 추가
+    spec:
+      containers:
+      - name: nodejs
+        image: "{{ .Values.image.nodejs.repository }}:{{ .Values.image.nodejs.tag }}"
+        imagePullPolicy: {{ .Values.image.apache2.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.service.apache2.port }}     
+#        volumeMounts:
+#        - name: apache2-storage
+#          mountPath: /usr/local/apache2/htdocs
+  volumeClaimTemplates:
+  - metadata:
+      name: nodejs-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: {{ .Values.persistence.storageClass }}
+      resources:
+        requests:
+          storage: {{ .Values.persistence.size.nodejs }}

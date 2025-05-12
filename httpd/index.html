@@ -1,0 +1,122 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>EUC Portal</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <link rel="stylesheet" href="assets/css/main.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+  <noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+</head>
+<body class="is-preload">
+  <div id="wrapper">
+    <div id="bg"></div>
+    <div id="overlay"></div>
+    <div id="main">
+      <button id="logout-btn" style="display: none;">로그아웃</button>
+      <header id="header">
+        <h1>EUC Portal</h1>
+        <div id="user-message">
+          <p id="user-info">로그인 상태를 확인 중...</p>
+        </div>
+        <p>VMware vCenter • Google ChromeOS • Omnissa Horizon</p>
+        <nav id="nav-menu">
+          <ul>
+            <li><a href="#" class="fab fa-google" style="color: #68c26d;" aria-label="Google" data-action="google" onclick="handleButtonClick(event);"></a></li>
+            <li><a href="#" class="fas fa-stream" style="color: #82b3eb;" aria-label="vCenter" data-action="vCenter" onclick="handleButtonClick(event)"></a></li>
+            <li><a href="#" class="fas fa-desktop" style="color: #143861;" aria-label="Horizon" onclick="document.getElementById('vdi').classList.toggle('active')"></a></li>
+            
+
+          </ul>
+        </nav>
+        <div class="vdi" id="vdi">
+          <div class="vdi-desktops">
+            <div class="desktop-box">
+              <div class="desktop-content">
+                <span class="fas fa-desktop desktop-icon"></span>
+                <div class="desktop-info">
+                  <p class="desktop-name">OA Desktop Pool</p>
+                  <p class="desktop-os">Windows 11</p>
+                </div>
+              </div>
+              <button class="connect-btn" data-action="oaDesktop" onclick="handleButtonClick(event);">연결</button>
+            </div>
+            <div class="desktop-box">
+              <div class="desktop-content">
+                <span class="fas fa-desktop desktop-icon"></span>
+                <div class="desktop-info">
+                  <p class="desktop-name">Secure Desktop Pool</p>
+                  <p class="desktop-os">Windows 11</p>
+                </div>
+              </div>
+              <button class="connect-btn" data-action="secureDesktop" onclick="handleButtonClick(event);">연결</button>
+            </div>
+          </div>
+        </div>
+      </header>
+      <footer id="footer">
+        <span class="copyright">© Developed by ehjeong : <a href="">EUC Portal</a>.</span>
+      </footer>
+    </div>
+  </div>
+
+  <script>
+    const BASE_API = 'http://nodejs:3000';
+      const URLS = {
+      userInfo: `${BASE_API}/userinfo`,
+      links:    `${BASE_API}/links`,
+      logout:   `${BASE_API}/logout`,
+      login:    `${BASE_API}/protected`,
+    };
+    let userLoggedIn = false; // 로그인 상태 추적 변수
+    let actionLinks  = {}; //링크 가져오기
+    window.onload = () => {
+        document.body.classList.remove('is-preload');
+        fetch(URLS.userInfo, { method: 'GET', credentials: 'include' })
+            .then(response => response.json())
+            .then(data => {
+              if (data.username) {
+                userLoggedIn = true;
+                document.getElementById('user-info').innerHTML = `${data.username} 님 환영합니다. <a href="${URLS.logout}">로그아웃</a>`;
+
+                fetch(URLS.links, { credentials:'include' })
+                     .then(r => r.json())
+                     .then(json => { actionLinks = json; });
+              } else {
+                userLoggedIn = false;
+                document.getElementById('user-info').innerHTML = '로그인을 해주세요. <a href="${URLS.login}"></i>로그인</a>';
+              }
+            })
+            .catch(() => {
+              document.getElementById('user-info').innerHTML = '로그인 상태를 확인할 수 없습니다. <a href="${URLS.login}">로그인</a>';
+            });
+        };
+
+    // 버튼 클릭 시 로그인 상태 확인
+    function handleButtonClick(event) {
+      event.preventDefault();
+
+      if (!userLoggedIn) {
+        alert('로그인 후 사용해 주세요.');
+        return;
+      }
+
+      const action = event.currentTarget.dataset.action;
+      const url    = actionLinks[action];
+
+      if (!url) {
+        alert('목적지 링크 정보를 불러오지 못했습니다.');
+        return;
+      }
+
+      if (url.startsWith('vmware-view://')) {
+        window.location.href = url;      // Horizon Client 호출
+      } else {
+        window.open(url, '_blank');      // 일반 URL → 새 탭
+      }
+    }
+</script>
+</body>
+</html>
+
+

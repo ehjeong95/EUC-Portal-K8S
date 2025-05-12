@@ -1,0 +1,13 @@
+# Apache 공식 이미지 사용
+FROM httpd:latest
+
+# 컨테이너 내 작업 디렉토리 설정
+WORKDIR /usr/local/apache2/htdocs/
+
+# 호스트의 httpd/ 폴더 내용을 컨테이너의 htdocs/로 복사
+COPY ./ /usr/local/apache2/htdocs/
+# 80포트 노출 (Apache 기본 포트)
+EXPOSE 80
+
+# Apache 서버 실행 (이미지의 기본 CMD 상속)
+# 기본 명령어: ["httpd-foreground"]

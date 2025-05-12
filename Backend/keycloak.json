@@ -1,0 +1,10 @@
+{
+  "realm": "SSO",
+  "auth-server-url": "http://keycloak:8080/",
+  "ssl-required": "external",
+  "resource": "SSO",
+  "credentials": {
+    "secret": "ycJpE9ORLrOxjZZOQgd1IGMth2rFxtJc"
+  },
+  "confidential-port": 0
+}

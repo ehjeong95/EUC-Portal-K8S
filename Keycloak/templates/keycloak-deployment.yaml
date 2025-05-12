@@ -1,0 +1,77 @@
+# templates/keycloak-deployment.yaml
+apiVersion: apps/v1
+#kind: Deployment
+kind: StatefulSet
+metadata:
+  name: keycloak
+spec:
+  replicas: {{ .Values.replicaCount.keycloak }}
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: keycloak
+  template:
+    metadata:
+      labels:
+        app: keycloak
+    spec:
+      affinity:                # 노드별 1개 보장(Optional)
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels: { app: keycloak }
+                topologyKey: kubernetes.io/hostname
+      containers:                     
+      - name: keycloak
+        image: "{{ .Values.image.keycloak.repository }}:{{ .Values.image.keycloak.tag }}"
+        imagePullPolicy: {{ .Values.image.keycloak.pullPolicy }}
+        #args: ["start", "--http-enabled=true" ,"--hostname=key.elhee.site" ,"--hostname-strict=false"]
+
+
+        args:
+          - start
+          - --http-enabled=true
+          - --hostname=https://key.elhee.site
+          - --http-port=8080
+          - --hostname-strict=false
+
+        ports:
+        - containerPort: {{ .Values.service.keycloak.port }}
+        env:
+        - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+          value: admin
+        - name: KC_BOOTSTRAP_ADMIN_USERNAME
+          value: admin
+        - name: KC_DB
+          value: postgres
+        - name: KC_DB_PASSWORD
+          value: password
+        - name: KC_DB_URL
+          value: jdbc:postgresql://192.168.0.190:5432/keycloak
+        - name: KC_DB_USERNAME
+          value: keycloak
+        - name: KEYCLOAK_ADMIN
+          value: admin
+        - name: KEYCLOAK_ADMIN_PASSWORD
+          value: password
+
+        volumeMounts:
+        - mountPath: /opt/keycloak/themes
+          name: keycloak-storage
+#        - mountPath: /opt/keycloak/providers/
+#          name: keycloak-storage
+      volumes:
+      - name: keycloak-storage
+        persistentVolumeClaim:
+          claimName: keycloak-storage
+  volumeClaimTemplates:
+  - metadata:
+      name: keycloak-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: {{ .Values.persistence.storageClass }}
+      resources:
+        requests:
+          storage: {{ .Values.persistence.size.keycloak }}
