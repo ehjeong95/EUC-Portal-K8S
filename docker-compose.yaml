@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres
+    volumes:
+      - ./volume/postgresql/data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: password
+      TZ: Asia/Seoul
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.1.1
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: password
+      TZ: Asia/Seoul
+      # keycloak이 quarkus를 사용하는 버전부터는 기존 환경변수 이름이 KC_*로 변경된 것이 많음
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: password
+      KEYCLOAK_ADMIN: admin
+      KC_PROXY: edge # edge proxy mode 사용
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME: 192.168.0.101
+      PROXY_ADDRESS_FORWARDING: "true"
+    command:
+      - start-dev # production 모드로 시작
+    ports:
+      - 8080:8080
+    depends_on:
+      - postgres
+    volumes:
+      - ./volume/keycloak:/opt/keycloak/themes
+      - ./themes:/opt/keycloak/providers/
+
+  apache-app:
+    image: httpd  # Apache HTTPD 이미지 사용
+    container_name: apache  # 컨테이너 이름 설정
+    ports:
+      - "4433:80"
+    volumes:
+      - ./httpd:/usr/local/apache2/htdocs/  # 로컬의 프론트엔드 파일을 Apache에 마운트
+        #    restart: unless-stopped
+
+
+  nodejs-app:
+    build: ./Backend  # Node.js 애플리케이션 빌드
+    container_name: nodejs  # 컨테이너 이름 설정
+    working_dir: /usr/src/app
+    ports:
+      - "3000:3000"
+      #volumes:  #해당 볼륨에 의존성 패키지(NPM_Module)이 있는경우엔 주석을 해제
+      #- ./Backend:/usr/src/app
+      #command: "node server.js"
+      #    restart: unless-stopped

@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: keycloak-ingress
+  namespace: kubenode
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: key.elhee.site  # 원하는 도메인 입력 (예: keycloak.yourdomain.com)
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: keycloak  # Keycloak 서비스 이름
+            port:
+              number: 8080  # Keycloak의 포트 (8080)

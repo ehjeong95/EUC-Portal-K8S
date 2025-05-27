@@ -5,6 +5,7 @@ kind: StatefulSet
 metadata:
   name: keycloak
 spec:
+  serviceName: keycloak-discovery  # headless service 이름
   replicas: {{ .Values.replicaCount.keycloak }}
   revisionHistoryLimit: 2
   selector:
@@ -32,18 +33,20 @@ spec:
 
         args:
           - start
-          - --http-enabled=true
-          - --hostname=https://key.elhee.site
-          - --http-port=8080
-          - --hostname-strict=false
+#         - --http-enabled=true 
+#         - --hostname=https://key.elhee.site
+#         - --hostname-strict=true 
+#         - --hostname-backchannel-dynamic=true 
+          - --http-port=9999
+#         - --cache=ispn
+#         - --cache-stack=kubernetes
+#          - -Djgroups.dns.query=keycloak-cluster.keycloak.svc.cluster.local
+
 
         ports:
-        - containerPort: {{ .Values.service.keycloak.port }}
+        - name: http
+          containerPort: {{ .Values.service.keycloak.port }}
         env:
-        - name: KC_BOOTSTRAP_ADMIN_PASSWORD
-          value: admin
-        - name: KC_BOOTSTRAP_ADMIN_USERNAME
-          value: admin
         - name: KC_DB
           value: postgres
         - name: KC_DB_PASSWORD
@@ -52,26 +55,51 @@ spec:
           value: jdbc:postgresql://192.168.0.190:5432/keycloak
         - name: KC_DB_USERNAME
           value: keycloak
+        - name: KC_HTTP_ENABLED
+          value: "true"                     
+        - name: KC_HOSTNAME
+          value: "https://key.elhee.site"       
+        - name: KC_HOSTNAME_STRICT
+          value: "true"
+        - name: KC_HOSTNAME_BACKCHANNEL_DYNAMIC
+          value: "true"
+        - name: KC_HOSTNAME_STRICT_HTTPS
+          value: "true"
+#        - name: KC_PROXY
+#          value: "edge"
+        - name: KC_PROXY_HEADERS
+          value: "xforwarded"
+        - name: PROXY_ADDRESS_FORWARDING
+          value: "true"
         - name: KEYCLOAK_ADMIN
-          value: admin
+          value: "admin" 
         - name: KEYCLOAK_ADMIN_PASSWORD
-          value: password
+          value: "admin" 
+        - name: KC_HEALTH_ENABLED
+          value: "true"
+        - name: KC_CACHE
+          value: "ispn"
+        - name: 'KC_CACHE_STACK'
+          value: 'kubernetes'
+        - name: JAVA_OPTS_APPEND
+         value: "-Djgroups.dns.query=keycloak-discovery.keycloak.svc.cluster.local"
 
         volumeMounts:
-        - mountPath: /opt/keycloak/themes
-          name: keycloak-storage
-#        - mountPath: /opt/keycloak/providers/
-#          name: keycloak-storage
+          - name: theme-volume
+            mountPath: /opt/keycloak/providers
       volumes:
-      - name: keycloak-storage
-        persistentVolumeClaim:
-          claimName: keycloak-storage
-  volumeClaimTemplates:
-  - metadata:
-      name: keycloak-storage
-    spec:
-      accessModes: ["ReadWriteOnce"]
-      storageClassName: {{ .Values.persistence.storageClass }}
-      resources:
-        requests:
-          storage: {{ .Values.persistence.size.keycloak }}
+      - name: theme-volume
+        hostPath:
+          path: /home/ubuntu/keycloak-themes
+          type: Directory
+
+
+#  volumeClaimTemplates:
+#  - metadata:
+#      name: keycloak-storage
+#    spec:
+#      accessModes: ["ReadWriteOnce"]
+#      storageClassName: {{ .Values.persistence.storageClass }}
+#      resources:
+#        requests:
+#          storage: {{ .Values.persistence.size.keycloak }}

@@ -1,0 +1,54 @@
+image:
+  postgres:
+    repository: postgres
+    tag: latest
+  keycloak:
+    repository: quay.io/keycloak/keycloak
+    tag: 26.1.1
+
+postgres:
+  # Postgres 컨테이너 환경변수
+  env:
+    POSTGRES_DB: keycloak
+    POSTGRES_USER: keycloak
+    POSTGRES_PASSWORD: password
+    TZ: Asia/Seoul
+
+  # 데이터 영속성 설정
+  persistence:
+    enabled: true
+    # 개발용으로 로컬 호스트 경로 바인드가 필요하다면 hostPath 사용
+    # production 환경이라면 storageClassName 과 PVC 크기만 지정
+    hostPath: ./volume/postgresql/data
+    mountPath: /var/lib/postgresql/data
+    size: 10Gi
+    storageClassName: ""     # 빈 문자열 = default StorageClass 사용
+
+keycloak:
+  # Keycloak 컨테이너 환경변수
+  env:
+    KC_BOOTSTRAP_ADMIN_USERNAME: admin
+    KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+    KEYCLOAK_ADMIN: admin
+    KEYCLOAK_ADMIN_PASSWORD: password
+    TZ: Asia/Seoul
+    KC_DB: postgres
+    KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+    KC_DB_USERNAME: keycloak
+    KC_DB_PASSWORD: password
+    KC_PROXY: edge
+    KC_HOSTNAME_STRICT: "false"
+    KC_HOSTNAME_STRICT_HTTPS: "false"
+    KC_HTTP_ENABLED: "true"
+    KC_HOSTNAME: key.elhee.site
+    PROXY_ADDRESS_FORWARDING: "true"
+
+  # 커스텀 커맨드를 배열 형태로 지정
+  command:
+    - start-dev
+
+  # 서비스(ClusterIP) 설정
+  service:
+    type: ClusterIP
+    port: 8080
+    targetPort: 8080

@@ -7,7 +7,7 @@ spec:
   type: {{ .Values.service.keycloak.type }}
   ports:
   - port: {{ .Values.service.keycloak.port }}
-    targetPort: {{ .Values.service.keycloak.port }}
+    targetPort: {{ .Values.service.keycloak.targetPort }}
     protocol: TCP
     name: http
   selector:

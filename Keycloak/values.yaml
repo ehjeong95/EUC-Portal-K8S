@@ -2,15 +2,16 @@
 replicaCount:
   keycloak: 2
   apache2: 2
+  nodejs: 2
 
 image:
   keycloak:
     repository: quay.io/keycloak/keycloak
-    tag: 26.1.1
+    tag: 26.2.4
     pullPolicy: IfNotPresent
   apache2:
     repository: elhee/apache
-    tag: 0.2
+    tag: 0.1
     pullPolicy: Always
   nodejs:
     repository: elhee/nodejs
@@ -24,14 +25,15 @@ image:
 service:
   keycloak:
     type: ClusterIP
-    port: 8080
+    port: 80
+    targetPort: 9999
 #    http: 8080    # Keycloak 컨테이너 포트
   apache2:
     type: ClusterIP
-    port: 4433
+    port: 80
   nodejs:
     type: ClusterIP
-    port: 3000
+    port: 80
 
 ingress:
   enabled: true
@@ -40,17 +42,15 @@ ingress:
     secretName: keycloak-tls     # ← 템플릿에서 .ingress.tls.secretName
   annotations:
     kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/use-forwarded-headers: "true"
   host: key.elhee.site
   host2: euc.elhee.site
-
 egress:
   enabled: true
   dbIp: "192.168.0.190/32"  # 외부 PostgreSQL DB IP
   dbPort: 5432         # 외부 DB 포트
+
+
+
 
 
 persistence:

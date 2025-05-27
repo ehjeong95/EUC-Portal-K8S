@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: /snap/kompose/19/kompose-linux-amd64 convert -c
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: apache-app
+  name: apache-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: apache-app
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: /snap/kompose/19/kompose-linux-amd64 convert -c
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: apache-app
+    spec:
+      containers:
+      - image: httpd
+        imagePullPolicy: ""
+        name: apache
+        ports:
+        - containerPort: 80
+        resources: {}
+        volumeMounts:
+        - mountPath: /usr/local/apache2/htdocs/
+          name: apache-app-claim0
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes:
+      - name: apache-app-claim0
+        persistentVolumeClaim:
+          claimName: apache-app-claim0
+status: {}

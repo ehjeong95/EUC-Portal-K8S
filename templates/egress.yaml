@@ -15,7 +15,19 @@ spec:
     - to:
         - ipBlock:
             cidr: {{ .Values.egress.dbIp }}
+            
       ports:
         - protocol: TCP
           port: {{ .Values.egress.dbPort }}
+    - to:
+      - podSelector:
+          matchLabels:
+            app: keycloak
+      ports:
+      - protocol: TCP
+        port: 9999
+      - protocol: TCP
+        port: 7800
+      - protocol: TCP
+        port: 57800
 {{- end }}
