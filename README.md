@@ -8,4 +8,4 @@ Docker 기반
 kubectl create secret tls keycloak-tls --cert=tls.crt --key=tls.key -n keycloak
 변경후
 kubectl create secret tls keycloak-tls --cert=fullchain.pem --key=privkey.pem -n keycloak
--------------------------------------------------------------------------------------------
+/////////////////////////////////////////////////////////////////////////////////
